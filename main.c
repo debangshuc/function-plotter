@@ -5,24 +5,33 @@
 #include <stdlib.h>
 
 
-
 #define WIDTH 1024
 #define HEIGHT 768
 #define GRID 0x2A2A3C
 
 
+#define START_X -10
+#define END_X 10
+#define START_Y -5
+#define END_Y 5
+#define STEP 0.1
+
+#define SCALE_X START_X / END_X
+#define SCALE_Y START_Y / END_Y
+
+
 // Functions to Draw the Grid
 void Draw_At_Coord(SDL_Surface *surface, SDL_Rect *rect, Uint32 color){
     
-    int x_coord = WIDTH / 2 + rect->x;
-    int y_coord = HEIGHT / 2 - rect->y;
+    int x_coord = WIDTH / 2 + (rect->x * SCALE_X);
+    int y_coord = HEIGHT / 2 - (rect->y * SCALE_Y);
 
 
     SDL_Rect mod_rect = (SDL_Rect) {x_coord, y_coord, rect->w, rect->h};
     SDL_FillSurfaceRect(surface, &mod_rect , color);
 }
 
-void DrawGrid(SDL_Surface *surface){
+void Draw_Grid(SDL_Surface *surface){
 
     SDL_Rect axis_x;
     axis_x.x = -WIDTH/2;
@@ -49,7 +58,13 @@ void Plot(SDL_Surface *surface, char *expression){
     int err;
     te_expr *expr = te_compile(expression,vars,1,&err);
     if(expr){
+        for(x=START_X; x<END_X; x+=STEP){
 
+            double y= te_eval(expr);
+            SDL_Rect rect = (SDL_Rect){x, y, 2, 2};
+            Draw_At_Coord(surface, rect, 0xFFFFFF);
+
+        }
     }
     else{
         fprintf(stderr,"Error encountered while evaluating Expression: %s \n",expression);
@@ -77,7 +92,7 @@ int main(int argc, char *argv[]){
 
 
     // Drawing of Grid
-    DrawGrid(surface);
+    Draw_Grid(surface);
     Plot(surface, expression);
     
      
